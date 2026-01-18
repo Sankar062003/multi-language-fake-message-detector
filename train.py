@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 import pickle
 
+# Load dataset
 data = pd.read_csv("dataset.csv")
 
 X = data["message"]

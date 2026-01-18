@@ -1,4 +1,12 @@
+# Python cache
 __pycache__/
-*.pkl
 *.pyc
-.env
+
+# Virtual environment
+venv/
+env/
+
+# OS files
+.DS_Store
+
+# DO NOT ignore project files
