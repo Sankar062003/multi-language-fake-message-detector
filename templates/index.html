@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake Message Detector</title>
+</head>
+<body>
+    <h2>Multi-Language Fake Message Detector</h2>
+
+    <form method="POST">
+        <textarea name="message" rows="5" cols="60"
+        placeholder="Paste message here"></textarea><br><br>
+
+        <button type="submit">Check</button>
+    </form>
+
+    {% if result %}
+        <h3>{{ result }}</h3>
+        <p><b>Detected Language:</b> {{ language }}</p>
+        <p><b>Translated Text:</b> {{ translated }}</p>
+    {% endif %}
+</body>
+</html>
