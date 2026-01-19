@@ -110,10 +110,12 @@
     </form>
 
     {% if prediction %}
-        <div class="result {{ 'fake' if prediction == 'Fake' else 'real' }}">
-            Prediction: {{ prediction }}
-        </div>
-    {% endif %}
+    <div class="result {{ 'fake' if prediction == 'Fake' else 'real' }}">
+        Prediction: {{ prediction }} <br>
+        Confidence: {{ probability }}%
+    </div>
+{% endif %}
+
 
     <footer>
         Built by Sankar | ML Project

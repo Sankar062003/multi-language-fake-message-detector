@@ -1,39 +1,40 @@
 from flask import Flask, render_template, request
 import pickle
-from googletrans import Translator
 
 app = Flask(__name__)
 
+# Load model & vectorizer
 model = pickle.load(open("model.pkl", "rb"))
-vectorizer = pickle.load(open("vector.pkl", "rb"))
-translator = Translator()
+vector = pickle.load(open("vector.pkl", "rb"))
 
 @app.route("/", methods=["GET", "POST"])
-def home():
-    result = ""
-    translated = ""
-    language = ""
+def index():
+    prediction = None
+    probability = None
 
     if request.method == "POST":
-        msg = request.form["message"]
+        message = request.form["message"]
 
-        t = translator.translate(msg, dest="en")
-        translated = t.text
-        language = t.src
+        # Vectorize message
+        message_vector = vector.transform([message])
 
-        vec = vectorizer.transform([translated])
-        pred = model.predict(vec)[0]
+        # Prediction (0 or 1)
+        pred = model.predict(message_vector)[0]
 
-        if pred == "fake":
-            result = "⚠ FAKE MESSAGE"
+        # Probability
+        prob = model.predict_proba(message_vector)[0]
+
+        if pred == 1:
+            prediction = "Fake"
+            probability = round(prob[1] * 100, 2)
         else:
-            result = "✅ NORMAL MESSAGE"
+            prediction = "Real"
+            probability = round(prob[0] * 100, 2)
 
     return render_template(
         "index.html",
-        result=result,
-        translated=translated,
-        language=language
+        prediction=prediction,
+        probability=probability
     )
 
 if __name__ == "__main__":
