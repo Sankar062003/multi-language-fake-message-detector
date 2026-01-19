@@ -1,42 +1,96 @@
 from flask import Flask, render_template, request
 import pickle
+import re
+from langdetect import detect
+from googletrans import Translator
 
 app = Flask(__name__)
+translator = Translator()
 
-# Load model & vectorizer
 model = pickle.load(open("model.pkl", "rb"))
-vector = pickle.load(open("vector.pkl", "rb"))
+vectorizer = pickle.load(open("vector.pkl", "rb"))
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    prediction = None
-    probability = None
+# -------- RULE BASED CHECKS -------- #
 
-    if request.method == "POST":
-        message = request.form["message"]
+def contains_suspicious_link(text):
+    return bool(re.search(r"http[s]?://|www\.|\.xyz|\.top|\.online|\.site", text))
 
-        # Vectorize message
-        message_vector = vector.transform([message])
+telugu_scam_words = [
+    "నిజంగా నాకు వచ్చింది",
+    "మీకు కూడా వస్తుంది",
+    "ప్రయత్నించి చూడండి",
+    "డబ్బు వచ్చింది",
+    "లింక్ ఓపెన్ చేయండి"
+]
 
-        # Prediction (0 or 1)
-        pred = model.predict(message_vector)[0]
+hindi_scam_words = [
+    "मुझे पैसे मिले",
+    "आपको भी मिलेगा",
+    "लिंक खोलें",
+    "अभी क्लिक करें",
+    "₹"
+]
 
-        # Probability
-        prob = model.predict_proba(message_vector)[0]
+def contains_language_scam(text, lang):
+    if lang == "te":
+        return any(word in text for word in telugu_scam_words)
+    if lang == "hi":
+        return any(word in text for word in hindi_scam_words)
+    return False
 
-        if pred == 1:
-            prediction = "Fake"
-            probability = round(prob[1] * 100, 2)
-        else:
-            prediction = "Real"
-            probability = round(prob[0] * 100, 2)
+# -------- ROUTES -------- #
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    message = request.form["message"]
+
+    try:
+        lang = detect(message)
+    except:
+        lang = "en"
+
+    # RULE 1: Suspicious link
+    if contains_suspicious_link(message):
+        return render_template(
+            "index.html",
+            result="❌ FAKE MESSAGE",
+            reason="Suspicious link detected",
+            language=lang
+        )
+
+    # RULE 2: Language specific scam words
+    if contains_language_scam(message, lang):
+        return render_template(
+            "index.html",
+            result="❌ FAKE MESSAGE",
+            reason="Scam pattern detected in native language",
+            language=lang
+        )
+
+    # TRANSLATE to English for ML
+    if lang != "en":
+        message = translator.translate(message, dest="en").text
+
+    data = vectorizer.transform([message])
+    prediction = model.predict(data)[0]
+
+    if prediction == 1:
+        result = "✅ REAL MESSAGE"
+        reason = "No scam patterns detected"
+    else:
+        result = "❌ FAKE MESSAGE"
+        reason = "ML model classified as scam"
 
     return render_template(
         "index.html",
-        prediction=prediction,
-        probability=probability
+        result=result,
+        reason=reason,
+        language=lang
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
-
+    app.run(debug=True)
