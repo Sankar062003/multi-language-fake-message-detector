@@ -2,27 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fake Message Detector</title>
+    <title>Fake Message Detector | Cybersecurity Project</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="container">
-    <div class="title">🌐 Multi-Language Fake Message Detector</div>
-    <div class="subtitle">Supports Telugu • Hindi • English</div>
+<div class="app-wrapper">
+    <div class="card">
 
-    <form method="POST" action="/predict">
-        <textarea name="message" placeholder="Paste message here..."></textarea>
-        <button type="submit">Check Message</button>
-    </form>
-
-    {% if result %}
-        <div class="result-box {% if 'FAKE' in result %}fake{% else %}real{% endif %}">
-            <strong>{{ result }}</strong>
-            <div class="reason">{{ reason }}</div>
-            <div class="lang">Detected Language: {{ language }}</div>
+        <div class="header">
+            <div class="logo">🛡️</div>
+            <div class="title">Fake Message Detector</div>
         </div>
-    {% endif %}
+
+        <div class="subtitle">
+            AI-powered scam detection for Telugu, Hindi & English messages
+        </div>
+
+        <div class="features">
+            <div class="feature">🌍 Multi-Language</div>
+            <div class="feature">🤖 ML + Rules</div>
+            <div class="feature">🔗 Scam Link Detection</div>
+        </div>
+
+        <form method="POST" action="/predict">
+            <textarea name="message" placeholder="Paste WhatsApp / SMS / Email message here..."></textarea>
+            <button type="submit">Analyze Message</button>
+        </form>
+
+        {% if result %}
+            <div class="result-box {% if 'FAKE' in result %}fake{% else %}real{% endif %}">
+                <strong>{{ result }}</strong>
+                <div class="reason">{{ reason }}</div>
+                <div class="lang">Detected Language: {{ language }}</div>
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            Built as a Cybersecurity ML Project • Deployed on Render
+        </div>
+
+    </div>
 </div>
 
 </body>
