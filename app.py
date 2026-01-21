@@ -2,10 +2,14 @@ from flask import Flask, render_template, request
 import pickle
 import re
 from langdetect import detect
-from googletrans import Translator
+from deep_translator import GoogleTranslator
+def translate_to_english(text):
+    try:
+        return GoogleTranslator(source="auto", target="en").translate(text)
+    except:
+        return text
 
 app = Flask(__name__)
-translator = Translator()
 
 model = pickle.load(open("model.pkl", "rb"))
 vectorizer = pickle.load(open("vector.pkl", "rb"))
@@ -73,7 +77,7 @@ def predict():
 
     # TRANSLATE to English for ML
     if lang != "en":
-        message = translator.translate(message, dest="en").text
+        message = translate_to_english(message)
 
     data = vectorizer.transform([message])
     prediction = model.predict(data)[0]
