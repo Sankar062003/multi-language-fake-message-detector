@@ -3,19 +3,21 @@ import pickle
 import re
 from langdetect import detect
 from deep_translator import GoogleTranslator
+
+app = Flask(__name__)
+
+# Load model & vectorizer
+model = pickle.load(open("model.pkl", "rb"))
+vectorizer = pickle.load(open("vector.pkl", "rb"))
+
+# -------- TRANSLATION -------- #
 def translate_to_english(text):
     try:
         return GoogleTranslator(source="auto", target="en").translate(text)
     except:
         return text
 
-app = Flask(__name__)
-
-model = pickle.load(open("model.pkl", "rb"))
-vectorizer = pickle.load(open("vector.pkl", "rb"))
-
 # -------- RULE BASED CHECKS -------- #
-
 def contains_suspicious_link(text):
     return bool(re.search(r"http[s]?://|www\.|\.xyz|\.top|\.online|\.site", text))
 
@@ -43,7 +45,6 @@ def contains_language_scam(text, lang):
     return False
 
 # -------- ROUTES -------- #
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -57,7 +58,6 @@ def predict():
     except:
         lang = "en"
 
-    # RULE 1: Suspicious link
     if contains_suspicious_link(message):
         return render_template(
             "index.html",
@@ -66,7 +66,6 @@ def predict():
             language=lang
         )
 
-    # RULE 2: Language specific scam words
     if contains_language_scam(message, lang):
         return render_template(
             "index.html",
@@ -75,7 +74,6 @@ def predict():
             language=lang
         )
 
-    # TRANSLATE to English for ML
     if lang != "en":
         message = translate_to_english(message)
 
@@ -97,4 +95,4 @@ def predict():
     )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
