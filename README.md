@@ -1,66 +1,45 @@
-\# Multi-Language Fake Message Detection
+# 🔐 Fake Message Detection System
 
+An AI-powered scam detection web application that identifies fake messages
+across multiple languages using Machine Learning and security rules.
 
+---
 
-This project detects fake or misleading messages using Machine Learning and Natural Language Processing.
+## 🚀 Features
+- Multi-language detection (English, Telugu, Hindi)
+- Suspicious link identification
+- ML-based text classification
+- Real-time web interface
+- Deployed on Render
 
+---
 
+## 🛠️ Tech Stack
+- Python
+- Flask
+- Scikit-learn
+- NLP
+- Regex
+- HTML/CSS
 
-\## Features
+---
 
-\- Multi-language text support
+## 🧠 Detection Logic
+1. Language detection
+2. Suspicious link scanning
+3. Scam keyword patterns
+4. Machine learning classification
 
-\- Machine Learning based prediction
+---
 
-\- Web interface using Flask
+## 🌐 Live Demo
+👉 https://your-render-link
 
-\- Pre-trained model and vectorizer
+---
 
-
-
-\## Technologies Used
-
-\- Python
-
-\- Flask
-
-\- Scikit-learn
-
-\- HTML/CSS
-
-
-
-\## Project Structure
-
-\- app.py        → Flask web app
-
-\- train.py      → Model training script
-
-\- dataset.csv   → Training dataset
-
-\- model.pkl     → Trained ML model
-
-\- vector.pkl    → Text vectorizer
-
-\- templates/    → HTML templates
-
-
-
-\## How to Run
-
-1\. Clone the repository
-
-2\. Install dependencies
-
-3\. Run `python app.py`
-
-4\. Open browser at `http://127.0.0.1:5000`
-
-
-
-\## Author
-
-Sankar
-
-
-
+## 📦 Installation
+```bash
+git clone https://github.com/yourusername/fake-message-detector
+cd fake-message-detector
+pip install -r requirements.txt
+python app.py
