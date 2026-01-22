@@ -3,6 +3,7 @@ import pickle
 import re
 from langdetect import detect
 from deep_translator import GoogleTranslator
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 
@@ -17,29 +18,42 @@ def translate_to_english(text):
     except:
         return text
 
-# -------- RULE BASED CHECKS --------
-def contains_suspicious_link(text):
-    return bool(re.search(r"http[s]?://|www\.|\.xyz|\.top|\.online|\.site", text.lower()))
+# -------- LINK ANALYSIS (GENERAL) --------
+def analyze_links(text):
+    urls = re.findall(r'https?://\S+|www\.\S+', text.lower())
 
-telugu_scam_words = [
-    "డబ్బు వచ్చింది",
-    "లింక్ ఓపెన్ చేయండి",
-    "మీకు కూడా వస్తుంది",
-    "ప్రయత్నించి చూడండి"
+    for url in urls:
+        domain = urlparse(url if url.startswith("http") else "http://" + url).netloc
+
+        # ❌ Known scam TLDs
+        if domain.endswith((".xyz", ".top", ".online", ".site", ".link", ".click")):
+            return "scam"
+
+        # ❌ URL shortening services
+        if domain.startswith(("bit.ly", "tinyurl", "t.co", "rb.gy")):
+            return "scam"
+
+        # ⚠ Unknown domain but not instant scam
+        return "unknown"
+
+    return "no_link"
+
+# -------- LANGUAGE SCAM PATTERNS --------
+TELUGU_SCAM = [
+    "డబ్బు వచ్చింది", "లింక్ ఓపెన్ చేయండి",
+    "మీకు కూడా వస్తుంది", "ప్రయత్నించి చూడండి"
 ]
 
-hindi_scam_words = [
-    "मुझे पैसे मिले",
-    "आपको भी मिलेगा",
-    "लिंक खोलें",
-    "अभी क्लिक करें"
+HINDI_SCAM = [
+    "मुझे पैसे मिले", "आपको भी मिलेगा",
+    "लिंक खोलें", "अभी क्लिक करें"
 ]
 
 def contains_language_scam(text, lang):
     if lang == "te":
-        return any(word in text for word in telugu_scam_words)
+        return any(word in text for word in TELUGU_SCAM)
     if lang == "hi":
-        return any(word in text for word in hindi_scam_words)
+        return any(word in text for word in HINDI_SCAM)
     return False
 
 # -------- ROUTES --------
@@ -57,36 +71,45 @@ def predict():
     except:
         lang = "en"
 
-    # 2️⃣ Hard scam rules (ALWAYS FIRST)
-    if contains_suspicious_link(message):
-        return render_template(
-            "index.html",
-            result="❌ FAKE MESSAGE",
-            reason="Suspicious link detected",
-            language=lang
-        )
-
+    # 2️⃣ Native language scam words
     if contains_language_scam(message, lang):
         return render_template(
             "index.html",
             result="❌ FAKE MESSAGE",
-            reason="Scam pattern detected in native language",
+            reason="Scam keywords detected",
             language=lang
         )
 
-    # 3️⃣ Translate for ML
+    # 3️⃣ Link analysis
+    link_status = analyze_links(message)
+
+    if link_status == "scam":
+        return render_template(
+            "index.html",
+            result="❌ FAKE MESSAGE",
+            reason="Malicious or high-risk link detected",
+            language=lang
+        )
+
+    # 4️⃣ Translate for ML
     message_en = translate_to_english(message) if lang != "en" else message
 
-    # 4️⃣ ML Prediction (FINAL DECISION)
+    # 5️⃣ ML Prediction
     data = vectorizer.transform([message_en])
     prediction = model.predict(data)[0]
 
-    if prediction == 1:
-        result = "✅ REAL MESSAGE"
-        reason = "ML model classified as legitimate"
-    else:
+    # 6️⃣ FINAL DECISION LOGIC
+    if prediction == 0:
         result = "❌ FAKE MESSAGE"
         reason = "ML model classified as scam"
+
+    elif link_status == "unknown":
+        result = "⚠ POSSIBLY SUSPICIOUS"
+        reason = "Unknown link detected — caution advised"
+
+    else:
+        result = "✅ REAL MESSAGE"
+        reason = "No scam indicators detected"
 
     return render_template(
         "index.html",
