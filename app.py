@@ -1,5 +1,33 @@
 from flask import Flask, render_template, request
 import pickle
+# Legitimate bank-style phrases (to avoid false positives)
+legit_bank_phrases = [
+    "dear customer",
+    "this is an automated message",
+    "do not share otp",
+    "bank never asks",
+    "no otp",
+    "no pin",
+    "visit nearest branch",
+    "contact official bank",
+    "no link",
+    "no action required"
+]
+def looks_legitimate(text):
+    text_lower = text.lower()
+
+    legit_hits = 0
+    for phrase in legit_bank_phrases:
+        if phrase in text_lower:
+            legit_hits += 1
+
+    has_link = "http://" in text_lower or "https://" in text_lower or "www." in text_lower
+
+    # If message looks official AND has no links → REAL
+    if legit_hits >= 2 and not has_link:
+        return True
+
+    return False
 import re
 from langdetect import detect
 from deep_translator import GoogleTranslator
@@ -52,6 +80,15 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     message = request.form["message"]
+    # STEP: Legit message override (before ML)
+if looks_legitimate(message):
+    return render_template(
+        "index.html",
+        result="✅ REAL MESSAGE",
+        reason="Official informational message with no scam indicators",
+        language="Detected Automatically"
+    )
+
 
     try:
         lang = detect(message)
