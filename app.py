@@ -29,8 +29,11 @@ def looks_legitimate(text):
 
     return False
 import re
-from langdetect import detect
-from deep_translator import GoogleTranslator
+def translate_to_english(text):
+    try:
+        return GoogleTranslator(source="auto", target="en").translate(text)
+    except:
+        return text
 
 app = Flask(__name__)
 
@@ -80,21 +83,23 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     message = request.form["message"]
-    # STEP: Legit message override (before ML)
-if looks_legitimate(message):
-    return render_template(
-        "index.html",
-        result="✅ REAL MESSAGE",
-        reason="Official informational message with no scam indicators",
-        language="Detected Automatically"
-    )
 
+    # STEP 1: Legit override FIRST
+    if looks_legitimate(message):
+        return render_template(
+            "index.html",
+            result="✅ REAL MESSAGE",
+            reason="Official informational message with no scam indicators",
+            language="Detected Automatically"
+        )
 
+    # STEP 2: Detect language
     try:
         lang = detect(message)
     except:
         lang = "en"
 
+    # STEP 3: Suspicious link check
     if contains_suspicious_link(message):
         return render_template(
             "index.html",
@@ -103,6 +108,7 @@ if looks_legitimate(message):
             language=lang
         )
 
+    # STEP 4: Native language scam words
     if contains_language_scam(message, lang):
         return render_template(
             "index.html",
@@ -111,9 +117,11 @@ if looks_legitimate(message):
             language=lang
         )
 
+    # STEP 5: Translate for ML
     if lang != "en":
         message = translate_to_english(message)
 
+    # STEP 6: ML prediction
     data = vectorizer.transform([message])
     prediction = model.predict(data)[0]
 
@@ -130,6 +138,7 @@ if looks_legitimate(message):
         reason=reason,
         language=lang
     )
+
 
 if __name__ == "__main__":
     app.run()
