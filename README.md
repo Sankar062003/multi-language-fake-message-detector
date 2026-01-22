@@ -1,45 +1,50 @@
-# 🔐 Fake Message Detection System
+# 🛡️ Fake Message Detection System
 
-An AI-powered scam detection web application that identifies fake messages
-across multiple languages using Machine Learning and security rules.
+**AI + Rules-based Web App to detect scam/fake messages in English, Hindi, and Telugu.**
+
+🔗 **Live Demo:** https://multi-language-fake-message-detector-1.onrender.com
 
 ---
 
-## 🚀 Features
-- Multi-language detection (English, Telugu, Hindi)
-- Suspicious link identification
-- ML-based text classification
-- Real-time web interface
-- Deployed on Render
+## 🚀 Project Features
+
+✔ Detects suspicious links  
+✔ Detects scam patterns in multiple languages  
+✔ ML + Rule-based hybrid system  
+✔ Beautiful interactive UI  
+✔ Supports real-time classification
 
 ---
 
 ## 🛠️ Tech Stack
-- Python
-- Flask
-- Scikit-learn
-- NLP
-- Regex
-- HTML/CSS
+
+| Technology | Purpose |
+|------------|---------|
+| Python     | Backend logic & ML |
+| Flask      | Web framework |
+| Scikit-learn | ML classification |
+| Regex      | Rule-based patterns |
+| HTML/CSS/JS | Frontend UI |
+| Render     | Deployment |
 
 ---
 
-## 🧠 Detection Logic
-1. Language detection
-2. Suspicious link scanning
-3. Scam keyword patterns
-4. Machine learning classification
+## 📸 Application Screenshots
+
+### 🏠 Home Page
+![Home Page](screenshots/home.png)
+
+### ❌ Fake Message Detection
+![Fake Message](screenshots/fake.png)
+
+### ✅ Real Message Detection
+![Real Message](screenshots/real.png)
 
 ---
 
-## 🌐 Live Demo
-👉 https://your-render-link
+## 🔥 Installation (Local)
 
----
-
-## 📦 Installation
+1. Clone repo
 ```bash
-git clone https://github.com/yourusername/fake-message-detector
+git clone https://github.com/Sankar062003/fake-message-detector
 cd fake-message-detector
-pip install -r requirements.txt
-python app.py
