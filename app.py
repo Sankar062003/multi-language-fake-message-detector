@@ -1,3 +1,4 @@
+from flask import redirect
 from flask import Flask, render_template, request
 import pickle
 import re
@@ -61,8 +62,11 @@ def contains_scam_keywords(text):
 def home():
     return render_template("index.html")
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["GET", "POST"])
 def predict():
+    if request.method == "GET":
+        return redirect("/")
+
     message = request.form.get("message", "").strip()
 
     # Empty message safety
